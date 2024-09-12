@@ -93,7 +93,6 @@ volumes:
 - persistentVolumeClaim
 - projected
 - secret
-- hostPath
 EOF
 ```
 
