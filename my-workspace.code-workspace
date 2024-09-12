@@ -19,6 +19,10 @@
 		{
 			"name": "ansible-demo",
 			"path": "/projects/ansible-demo"
+		},
+		{
+			"name": "quarkus-super-heroes",
+			"path": "/projects/quarkus-super-heroes"
 		}
 	],
 	"extensions": {
