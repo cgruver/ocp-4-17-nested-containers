@@ -42,60 +42,6 @@ storage:
           "/dev/fuse",
           "/dev/net/tun"
         ]
-  - path: /etc/modules-load.d/nested-podman.conf
-    mode: 0644
-    overwrite: true
-    contents:
-      inline: |
-        tun
-        rtnl-link-bridge
-        ipt_addrtype
-        ipt_MASQUERADE
-  - path: /etc/nested_podman/nested_podman.te
-    mode: 0644
-    overwrite: true
-    contents:
-      inline: |
-        module nested_podman 1.0;
-
-        require {
-          type null_device_t;
-          type zero_device_t;
-          type urandom_device_t;
-          type random_device_t;
-          type container_file_t;
-          type container_engine_t;
-          type devtty_t;
-          type setfiles_t;
-          class chr_file { mounton read setattr write };
-          class sock_file mounton;
-        }
-
-        #============= container_engine_t ==============
-        allow container_engine_t container_file_t:sock_file mounton;
-        allow container_engine_t devtty_t:chr_file mounton;
-        allow container_engine_t null_device_t:chr_file { mounton setattr };
-        allow container_engine_t random_device_t:chr_file mounton;
-        allow container_engine_t urandom_device_t:chr_file mounton;
-        allow container_engine_t zero_device_t:chr_file mounton;
-systemd:
-  units:
-  - contents: |
-      [Unit]
-      Description=Modify SeLinux Type container_engine_t
-      DefaultDependencies=no
-      After=kubelet.service
-
-      [Service]
-      Type=oneshot
-      RemainAfterExit=yes
-      ExecStart=bash -c "/bin/checkmodule -M -m -o /tmp/nested_podman.mod /etc/nested_podman/nested_podman.te && /bin/semodule_package -o /tmp/nested_podman.pp -m /tmp/nested_podman.mod && /sbin/semodule -i /tmp/nested_podman.pp"
-      TimeoutSec=0
-
-      [Install]
-      WantedBy=multi-user.target
-    enabled: true
-    name: systemd-nested-podman-selinux.service
 EOF
 ```
 
@@ -119,7 +65,9 @@ allowedCapabilities:
 defaultAddCapabilities: null
 fsGroup:
   type: MustRunAs
-  gid: 0
+  ranges:
+  - min: 1000
+    max: 65534
 groups: []
 readOnlyRootFilesystem: false
 requiredDropCapabilities:
@@ -133,7 +81,10 @@ seLinuxContext:
   seLinuxOptions:
     type: container_engine_t
 supplementalGroups:
-  type: RunAsAny
+  type: MustRunAs
+  ranges:
+  - min: 1000
+    max: 65534
 users: []
 volumes:
 - configMap
