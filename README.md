@@ -71,8 +71,7 @@ fsGroup:
 groups: []
 readOnlyRootFilesystem: false
 requiredDropCapabilities:
-- KILL
-- MKNOD
+- ALL
 runAsUser:
   type: MustRunAs
   uid: 1000
